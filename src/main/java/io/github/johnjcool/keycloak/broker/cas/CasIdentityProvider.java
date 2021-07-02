@@ -40,6 +40,7 @@ import org.keycloak.models.UserSessionModel;
 import org.keycloak.services.ErrorPage;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.messages.Messages;
+import org.keycloak.sessions.AuthenticationSessionModel;
 
 public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityProviderConfig> {
 
@@ -167,7 +168,11 @@ public class CasIdentityProvider extends AbstractIdentityProvider<CasIdentityPro
 				user.getContextData().put(USER_ATTRIBUTES, success.getAttributes());
 				user.setIdpConfig(config);
 				user.setIdp(CasIdentityProvider.this);
-				user.setCode(state);
+
+				AuthenticationSessionModel authSession = this.callback.getAndVerifyAuthenticationSession(state);
+				session.getContext().setAuthenticationSession(authSession);
+				user.setAuthenticationSession(authSession);
+
 				return user;
 			} catch (Exception e) {
 				throw new IdentityBrokerException("Could not fetch attributes from External IdP's userinfo endpoint.", e);
